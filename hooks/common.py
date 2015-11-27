@@ -28,6 +28,8 @@ def get_service_user(service):
 def cleanup_service_user(service):
     os.unlink(get_service_user_file(service))
 
+def sanitise_service_name(service_name):
+    return ''.join(e for e in service_name if e.isalnum())
 
 relation_id = os.environ.get('JUJU_RELATION_ID')
 change_unit = os.environ.get('JUJU_REMOTE_UNIT')
@@ -37,7 +39,8 @@ database_name_file = '.%s_database_name' % (relation_id)
 # change_unit will be None on broken hooks
 database_name = ''
 if change_unit:
-    database_name, _ = change_unit.split("/")
+    service_name, _ = change_unit.split("/")
+    database_name = sanitise_service_name(service_name)
     with open(database_name_file, 'w') as dbnf:
         dbnf.write("%s\n" % database_name)
         dbnf.flush()
